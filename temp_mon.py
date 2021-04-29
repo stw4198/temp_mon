@@ -18,8 +18,8 @@ class Temp_Logs():
 	def parse_options(self,argv=None):
 		parser = argparse.ArgumentParser()
 		parser.add_argument("filename", help="temperature log to read and plot", type=str)
-		parser.add_argument("--run_date", help="date of run (yyyy-mm-dd)", type=str, default="0000-00-00")
-		parser.add_argument("--run_time", help="time of run (hh:mm:ss)", type=str, default="00:00:00")
+		parser.add_argument("--run_date", help="date of run (yyyy-mm-dd)", type=str)
+		parser.add_argument("--run_time", help="time of run (hh:mm:ss)", type=str)
 		parser.add_argument("--run_length", help="length of run (hh:mm:ss)", type=str, default="00:15:00")
 		args = parser.parse_args(argv)
 		self.filename = args.filename
@@ -67,43 +67,44 @@ class Temp_Logs():
 	def run_data(self,date,time,n,temp,temp_err):
 		t0,t1,t2,t3,t4,t5,t6,t7 = temp
 		t0_err,t1_err,t2_err,t3_err,t4_err,t5_err,t6_err,t7_err = temp_err
-				
-		hrs,mins,secs = self.run_time.split(":")
-		runtime = datetime.time(int(hrs),int(mins),int(secs))
-		
-		year,month,day = self.run_date.split("-")
-		rundate = datetime.date(int(year),int(month),int(day))
+		try:		
+			hrs,mins,secs = self.run_time.split(":")
+			runtime = datetime.time(int(hrs),int(mins),int(secs))
+			
+			year,month,day = self.run_date.split("-")
+			rundate = datetime.date(int(year),int(month),int(day))
 
-		hrs_l,mins_l,secs_l = self.run_length.split(":")
-		runlength = datetime.time(int(hrs_l),int(mins_l),int(secs_l))
+			hrs_l,mins_l,secs_l = self.run_length.split(":")
+			runlength = datetime.time(int(hrs_l),int(mins_l),int(secs_l))
 
-		length = datetime.datetime.combine(rundate,runlength)
-		end = datetime.datetime.combine(rundate,runtime)
-		td = end - length
-		dt = datetime.datetime.strptime("{} {}".format(rundate, td), "%Y-%m-%d %H:%M:%S")
-		run_idx = []
-		
-		for i in range(len(time)):
-			Hrs,Mins,Secs = time[i].split(":")
-			Time = datetime.time(int(Hrs),int(Mins),int(Secs))
-			Year,Month,Day = date[i].split("-")
-			RunDate = datetime.date(int(Year),int(Month),int(Day))
-			Run = datetime.datetime.combine(RunDate,Time)
-			if Run <= end and Run >= dt:
-				run_idx.append(i)
-				
-		t0_av = np.mean(t0[run_idx])
-		t1_av = np.mean(t1[run_idx])
-		t2_av = np.mean(t2[run_idx])
-		t3_av = np.mean(t3[run_idx])
-		t4_av = np.mean(t4[run_idx])
-		t5_av = np.mean(t5[run_idx])
-		t6_av = np.mean(t6[run_idx])
-		t7_av = np.mean(t7[run_idx])
-		t_av = np.mean(np.array([t1_av,t2_av,t3_av,t4_av,t6_av]))
-		t_av_err = np.std(np.array([t1_av,t2_av,t3_av,t4_av,t6_av]))
-		print("Average temperature = %.4f +/- %.4f degC" % (t_av,t_av_err)) 
-
+			length = datetime.datetime.combine(rundate,runlength)
+			end = datetime.datetime.combine(rundate,runtime)
+			td = end - length
+			dt = datetime.datetime.strptime("{} {}".format(rundate, td), "%Y-%m-%d %H:%M:%S")
+			run_idx = []
+			
+			for i in range(len(time)):
+				Hrs,Mins,Secs = time[i].split(":")
+				Time = datetime.time(int(Hrs),int(Mins),int(Secs))
+				Year,Month,Day = date[i].split("-")
+				RunDate = datetime.date(int(Year),int(Month),int(Day))
+				Run = datetime.datetime.combine(RunDate,Time)
+				if Run <= end and Run >= dt:
+					run_idx.append(i)
+					
+			t0_av = np.mean(t0[run_idx])
+			t1_av = np.mean(t1[run_idx])
+			t2_av = np.mean(t2[run_idx])
+			t3_av = np.mean(t3[run_idx])
+			t4_av = np.mean(t4[run_idx])
+			t5_av = np.mean(t5[run_idx])
+			t6_av = np.mean(t6[run_idx])
+			t7_av = np.mean(t7[run_idx])
+			t_av = np.mean(np.array([t1_av,t2_av,t3_av,t4_av,t6_av]))
+			t_av_err = np.std(np.array([t1_av,t2_av,t3_av,t4_av,t6_av]))
+			print("Average temperature = %.4f +/- %.4f degC" % (t_av,t_av_err))
+		except:
+			print("\nCould not calculate average temperature\n")
 		return
 	
 	def plot_data(self,date,time,n,temp,temp_err):
